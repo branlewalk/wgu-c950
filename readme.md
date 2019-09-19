@@ -18,7 +18,7 @@ The intent is to use this solution (program) for this specific location and to u
   * The package ID is unique; there are no collisions.
   * No further assumptions exist or are allowed.
 
-## REQUIREMENTS
+## Requirements
 Your submission must be your original work. No more than a combined total of 30% of the submission and no more than a 10% match to any one individual source can be directly quoted or closely paraphrased from sources, even if cited correctly. An originality report is provided when you submit your task that can be used as a guide.
 You must use the rubric to direct the creation of your submission because it provides detailed criteria that will be used to evaluate your work. Each requirement below may be evaluated by more than one rubric aspect. The rubric aspect titles may contain hyperlinks to relevant portions of the course.
 
@@ -79,6 +79,7 @@ I.  Justify your choice of algorithm by doing the following:
    3.  Identify two other algorithms that could be used and would have met the criteria and requirements given in the scenario.
    
         a.  Describe how each  algorithm identified in part I3 is different from the algorithm you chose to use in the solution.
+        
 J.  Describe what you would do differently if you did this project again.
 
 K.  Justify your choice of data structure by doing the following:
