@@ -1,4 +1,4 @@
-import graph
+from map import Map, Destination, vantage, shortest
 import package
 import hashtable
 
@@ -9,7 +9,7 @@ def load_locations(filename, g):
         locations = [line.split(',') for line in f]
         for i, x in enumerate(locations):  # print the list items
             location = x[0].strip()
-            g.add_vertex(location)
+            g.add_location(location)
             print "Location - {0} = {1}".format(i, location)
             loc_name.append(location)
     return loc_name
@@ -22,45 +22,45 @@ def load_distances(filename, g, locations):
             for l, d in enumerate(x):
                 if d.strip() == '0':
                     break
-                g.add_edge(locations[i].strip(), locations[l].strip(), float(d))
+                g.add_trace(locations[i].strip(), locations[l].strip(), float(d))
                 print "Distance - {0} = From {1} to {2}".format(d, locations[i], locations[l])
 
 
-def get_shortest_stop(start, truck):
-    shortest = None
-    dijkstra_graph = graph.dijkstra(truck, start)
+def get_shortest_destination(start, truck):
+    shortest_route = None
+    vantaged_map = vantage(truck, start)
     for t in truck:
         if t is not start:
-            target = dijkstra_graph[t.get_id()]
-            path = [graph.Stop(target, 0)]
-            graph.shortest(target, path)
+            target = vantaged_map[t.get_address()]
+            path = [Destination(target, 0)]
+            shortest(target, path)
             total = path[-1].get_total_distance()
-            if shortest is None:
-                shortest = path[0]
-            elif total < shortest.total_distance:
-                shortest = path[0]
+            if shortest_route is None:
+                shortest_route = path[0]
+            elif total < shortest_route.total_distance:
+                shortest_route = path[0]
             for s in reversed(path):
                 s.set_total_distance(total - s.get_total_distance())
-    print('Shortest route is: ' + str(shortest.total_distance))
-    return shortest
+    print('Shortest route is: ' + str(shortest_route.total_distance))
+    return shortest_route
 
 
 if __name__ == '__main__':
 
-    g = graph.Graph()
-    locations = load_locations('locations.csv', g)
-    load_distances('distance.csv', g, locations)
+    del_map = Map()
+    locations = load_locations('locations.csv', del_map)
+    load_distances('distance.csv', del_map, locations)
 
-    warehouse = package.PackageWarehouse()
+    warehouse = package.PackageWarehouse(del_map)
 
     print('Graph data:')
-    for v in g:
-        for w in v.get_connections():
-            vid = v.get_id()
-            wid = w.get_id()
-            print('( %s , %s, %3d)' % (vid, wid, v.get_weight(w)))
+    for floc in del_map:
+        for tloc in floc.get_connections():
+            floc_id = floc.get_address()
+            tloc_id = tloc.get_address()
+            print('( %s , %s, %3d)' % (floc_id, tloc_id, floc.get_weight(tloc)))
 
-    hub = g.get_vertex('HUB')
+    hub = del_map.get_location('HUB')
     truck = [warehouse.packages[0].vertex, warehouse.packages[1].vertex, warehouse.packages[2].vertex, hub]
 
     route = []
@@ -68,14 +68,14 @@ if __name__ == '__main__':
     total_distance = 0
     while len(truck):
         if len(truck) > 1:
-            shortest_stop = get_shortest_stop(start, truck)
+            shortest_stop = get_shortest_destination(start, truck)
             total_distance += shortest_stop.total_distance
             truck.remove(start)
             route.append(shortest_stop)
-            start = shortest_stop.vertex.vertex
+            start = shortest_stop.location.location
         else:
             truck = []
-            last_stop = get_shortest_stop(start, [start, hub])
+            last_stop = get_shortest_destination(start, [start, hub])
             total_distance += last_stop.total_distance
             route.append(last_stop)
 

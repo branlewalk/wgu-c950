@@ -2,7 +2,7 @@ import sys
 import heapq
 
 
-class Vertex:
+class Location:
     def __init__(self, node):
         self.id = node
         self.adjacent = {}
@@ -13,7 +13,7 @@ class Vertex:
     def get_connections(self):
         return self.adjacent.keys()
 
-    def get_id(self):
+    def get_address(self):
         return self.id
 
     def get_weight(self, neighbor):
@@ -23,9 +23,9 @@ class Vertex:
         return str(self.id) + ' adjacent: ' + str([x.id for x in self.adjacent])
 
 
-class DijkstraVertex:
-    def __init__(self, vertex):
-        self.vertex = vertex
+class DiLocations:
+    def __init__(self, location):
+        self.location = location
         # Set distance to infinity for all nodes
         self.distance = sys.maxint
         # Mark all nodes unvisited
@@ -34,13 +34,13 @@ class DijkstraVertex:
         self.previous = None
 
     def get_adjacent(self):
-        return self.vertex.adjacent
+        return self.location.adjacent
 
     def get_id(self):
-        return self.vertex.get_id()
+        return self.location.get_address()
 
     def get_weight(self, neighbor):
-        return self.vertex.get_weight(neighbor)
+        return self.location.get_weight(neighbor)
 
     def set_distance(self, dist):
         self.distance = dist
@@ -55,41 +55,41 @@ class DijkstraVertex:
         self.visited = True
 
     def __str__(self):
-        return str(self.vertex)
+        return str(self.location)
 
 
-class Graph:
+class Map:
     def __init__(self):
-        self.vert_dict = {}
-        self.num_vertices = 0
+        self.location_dict = {}
+        self.num_locations = 0
         self.previous = 0
 
     def __iter__(self):
-        return iter(self.vert_dict.values())
+        return iter(self.location_dict.values())
 
-    def add_vertex(self, node):
-        self.num_vertices = self.num_vertices + 1
-        new_vertex = Vertex(node)
-        self.vert_dict[node] = new_vertex
-        return new_vertex
+    def add_location(self, node):
+        self.num_locations = self.num_locations + 1
+        new_location = Location(node)
+        self.location_dict[node] = new_location
+        return new_location
 
-    def get_vertex(self, n):
-        if n in self.vert_dict:
-            return self.vert_dict[n]
+    def get_location(self, n):
+        if n in self.location_dict:
+            return self.location_dict[n]
         else:
             return None
 
-    def add_edge(self, frm, to, cost=0):
-        if frm not in self.vert_dict:
-            self.add_vertex(frm)
-        if to not in self.vert_dict:
-            self.add_vertex(to)
+    def add_trace(self, frm, to, cost=0):
+        if frm not in self.location_dict:
+            self.add_location(frm)
+        if to not in self.location_dict:
+            self.add_location(to)
 
-        self.vert_dict[frm].add_neighbor(self.vert_dict[to], cost)
-        self.vert_dict[to].add_neighbor(self.vert_dict[frm], cost)
+        self.location_dict[frm].add_neighbor(self.location_dict[to], cost)
+        self.location_dict[to].add_neighbor(self.location_dict[frm], cost)
 
-    def get_vertices(self):
-        return self.vert_dict.keys()
+    def get_locations(self):
+        return self.location_dict.keys()
 
     def set_previous(self, current):
         self.previous = current
@@ -98,9 +98,9 @@ class Graph:
         return self.previous
 
 
-class Stop:
-    def __init__(self, vertex, total_distance):
-        self.vertex = vertex
+class Destination:
+    def __init__(self, location, total_distance):
+        self.location = location
         self.total_distance = total_distance
 
     def get_total_time(self):
@@ -110,34 +110,28 @@ class Stop:
         return self.total_distance
 
     def __str__(self):
-        return str(self.vertex.get_id()) + ', ' + str(self.total_distance) + ', ' + str(self.get_total_time())
+        return str(self.location.get_address()) + ', ' + str(self.total_distance) + ', ' + str(self.get_total_time())
 
     def set_total_distance(self, total_distance):
         self.total_distance = total_distance
 
 
-def shortest(v, path):
-    ''' make shortest path from v.previous'''
-    total = 0
-    short(v, path, total)
-
-
-def short(v, path, total):
+def shortest(v, path, total=0):
     if v.previous:
         total = total + v.distance
-        path.append(Stop(v.previous, v.distance))
-        short(v.previous, path, total)
+        path.append(Destination(v.previous, v.distance))
+        shortest(v.previous, path, total)
     return total
 
 
-def dijkstra(aGraph, start):
+def vantage(unsorted_map, start):
 
-    dijkstra_dict = dict((v.get_id(), DijkstraVertex(v)) for v in aGraph)
+    vantage_dict = dict((loc.get_address(), DiLocations(loc)) for loc in unsorted_map)
 
     # Set the distance for the start node to zero
-    dijkstra_dict[start.get_id()].set_distance(0)
+    vantage_dict[start.get_address()].set_distance(0)
     # Put tuple pair into the priority queue
-    unvisited_queue = [(v.get_distance(), v) for v in dijkstra_dict.values()]
+    unvisited_queue = [(loc.get_distance(), loc) for loc in vantage_dict.values()]
 
     heapq.heapify(unvisited_queue)
 
@@ -147,24 +141,24 @@ def dijkstra(aGraph, start):
         current = uv[1]
         current.set_visited()
 
-        # for next in v.adjacent:
+        # for next in loc.adjacent:
         for next in current.get_adjacent():
-            if next.get_id() in dijkstra_dict:
-                dijkstra_next = dijkstra_dict[next.get_id()]
+            if next.get_address() in vantage_dict:
+                vantage_next = vantage_dict[next.get_address()]
                 # if visited, skip
-                if dijkstra_next.visited:
+                if vantage_next.visited:
                     continue
                 new_dist = current.get_distance() + current.get_weight(next)
 
-                if new_dist < dijkstra_next.get_distance():
-                    dijkstra_next.set_distance(new_dist)
-                    dijkstra_next.set_previous(current)
+                if new_dist < vantage_next.get_distance():
+                    vantage_next.set_distance(new_dist)
+                    vantage_next.set_previous(current)
 
         # Rebuild heap
         # 1. Pop every item
         while len(unvisited_queue):
             heapq.heappop(unvisited_queue)
         # 2. Put all vertices not visited into the queue
-        unvisited_queue = [(v.get_distance(), v) for v in dijkstra_dict.values() if not v.visited]
+        unvisited_queue = [(loc.get_distance(), loc) for loc in vantage_dict.values() if not loc.visited]
         heapq.heapify(unvisited_queue)
-    return dijkstra_dict
+    return vantage_dict
