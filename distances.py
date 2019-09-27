@@ -1,4 +1,4 @@
-from map import Map, Destination, vantage, shortest
+from graph import Graph, Destination, vantage, shortest
 import package
 import hashtable
 
@@ -10,7 +10,7 @@ def load_locations(filename, g):
         for i, x in enumerate(locations):  # print the list items
             location = x[0].strip()
             g.add_location(location)
-            print "Location - {0} = {1}".format(i, location)
+            # print "Location - {0} = {1}".format(i, location)
             loc_name.append(location)
     return loc_name
 
@@ -23,7 +23,7 @@ def load_distances(filename, g, locations):
                 if d.strip() == '0':
                     break
                 g.add_trace(locations[i].strip(), locations[l].strip(), float(d))
-                print "Distance - {0} = From {1} to {2}".format(d, locations[i], locations[l])
+                # print "Distance - {0} = From {1} to {2}".format(d, locations[i], locations[l])
 
 
 def get_shortest_destination(start, truck):
@@ -47,21 +47,49 @@ def get_shortest_destination(start, truck):
 
 if __name__ == '__main__':
 
-    del_map = Map()
+    del_map = Graph()
     locations = load_locations('locations.csv', del_map)
     load_distances('distance.csv', del_map, locations)
 
     warehouse = package.PackageWarehouse(del_map)
 
-    print('Graph data:')
-    for floc in del_map:
-        for tloc in floc.get_connections():
-            floc_id = floc.get_address()
-            tloc_id = tloc.get_address()
-            print('( %s , %s, %3d)' % (floc_id, tloc_id, floc.get_weight(tloc)))
+    # distribute packages by truck -> deliver with -> deadlines -> wrong address
+    packages_for_truck = warehouse.get_packages_by_truck('2')
+    packages_deliver_together = warehouse.get_packages_deliver_together()
+    packages_by_deadline = warehouse.get_packages_with_deadline()
+    packages_by_delay = warehouse.get_packages_with_delay()
+
+    print('Package by Truck: ')
+    for p in packages_for_truck:
+        print('  {0}'.format(p))
+
+    print('Package(s) to be Delivered Together: ')
+    for p in packages_deliver_together:
+        print(' New together list: ')
+        for d in p:
+            print('  {0}'.format(d))
+
+    print('Packages by Deadline:')
+    for k in packages_by_deadline:
+        print(' {0}'.format(k))
+        for p in packages_by_deadline[k]:
+            print('  {0}'.format(p))
+
+    print('Packages by Delay:')
+    for k in packages_by_delay:
+        print(' {0}'.format(k))
+        for p in packages_by_delay[k]:
+            print('  {0}'.format(p))
+
+    # print('Graph data:')
+    # for floc in del_map:
+    #     for tloc in floc.get_connections():
+    #         floc_id = floc.get_address()
+    #         tloc_id = tloc.get_address()
+    #         print('( %s , %s, %3d)' % (floc_id, tloc_id, floc.get_weight(tloc)))
 
     hub = del_map.get_location('HUB')
-    truck = [warehouse.packages[0].vertex, warehouse.packages[1].vertex, warehouse.packages[2].vertex, hub]
+    truck = [warehouse.packages[0].location, warehouse.packages[1].location, warehouse.packages[2].location, hub]
 
     route = []
     start = hub
@@ -80,3 +108,5 @@ if __name__ == '__main__':
             route.append(last_stop)
 
     print('Total distance for route:', total_distance)
+
+    #manifest - the packages on one truck

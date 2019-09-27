@@ -4,7 +4,7 @@ import heapq
 
 class Location:
     def __init__(self, node):
-        self.id = node
+        self.address = node
         self.adjacent = {}
 
     def add_neighbor(self, neighbor, weight=0):
@@ -14,21 +14,21 @@ class Location:
         return self.adjacent.keys()
 
     def get_address(self):
-        return self.id
+        return self.address
 
     def get_weight(self, neighbor):
         return self.adjacent[neighbor]
 
     def __str__(self):
-        return str(self.id) + ' adjacent: ' + str([x.id for x in self.adjacent])
+        return str(self.address) + ' adjacent: ' + str([x.id for x in self.adjacent])
 
 
 class DiLocations:
     def __init__(self, location):
         self.location = location
-        # Set distance to infinity for all nodes
+        # Set distance to infinity
         self.distance = sys.maxint
-        # Mark all nodes unvisited
+        # Mark all unvisited
         self.visited = False
         # Predecessor
         self.previous = None
@@ -58,7 +58,7 @@ class DiLocations:
         return str(self.location)
 
 
-class Map:
+class Graph:
     def __init__(self):
         self.location_dict = {}
         self.num_locations = 0
@@ -128,7 +128,7 @@ def vantage(unsorted_map, start):
 
     vantage_dict = dict((loc.get_address(), DiLocations(loc)) for loc in unsorted_map)
 
-    # Set the distance for the start node to zero
+    # Set the distance for the start location to zero
     vantage_dict[start.get_address()].set_distance(0)
     # Put tuple pair into the priority queue
     unvisited_queue = [(loc.get_distance(), loc) for loc in vantage_dict.values()]
@@ -136,29 +136,28 @@ def vantage(unsorted_map, start):
     heapq.heapify(unvisited_queue)
 
     while len(unvisited_queue):
-        # Pops a vertex with the smallest distance
+        # Pops a location with the smallest distance
         uv = heapq.heappop(unvisited_queue)
-        current = uv[1]
-        current.set_visited()
+        current_loc = uv[1]
+        current_loc.set_visited()
 
-        # for next in loc.adjacent:
-        for next in current.get_adjacent():
-            if next.get_address() in vantage_dict:
-                vantage_next = vantage_dict[next.get_address()]
+        for next_adj_loc in current_loc.get_adjacent():
+            if next_adj_loc.get_address() in vantage_dict:
+                vantage_next = vantage_dict[next_adj_loc.get_address()]
                 # if visited, skip
                 if vantage_next.visited:
                     continue
-                new_dist = current.get_distance() + current.get_weight(next)
+                new_dist = current_loc.get_distance() + current_loc.get_weight(next_adj_loc)
 
                 if new_dist < vantage_next.get_distance():
                     vantage_next.set_distance(new_dist)
-                    vantage_next.set_previous(current)
+                    vantage_next.set_previous(current_loc)
 
         # Rebuild heap
-        # 1. Pop every item
+        # 1. Pop every adj
         while len(unvisited_queue):
             heapq.heappop(unvisited_queue)
-        # 2. Put all vertices not visited into the queue
+        # 2. Put all locations not visited into the queue
         unvisited_queue = [(loc.get_distance(), loc) for loc in vantage_dict.values() if not loc.visited]
         heapq.heapify(unvisited_queue)
     return vantage_dict
