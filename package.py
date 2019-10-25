@@ -38,6 +38,8 @@ class Package:
     def get_delivery_status(self):
         return
 
+    def get_truck(self):
+        return self.truck
 
 
 def load_packages(filename, graph):
@@ -80,7 +82,7 @@ class PackageWarehouse:
 
         self.package_by_address = hashtable.HashTable()
         self.package_by_id = hashtable.HashTable()
-
+        self.package_by_location = hashtable.HashTable()
         self.package_by_truck = hashtable.HashTable()
         self.package_by_deadlines = hashtable.HashTable()
         self.package_by_deliver_with = hashtable.HashTable()
@@ -88,6 +90,7 @@ class PackageWarehouse:
         self.package_by_wrong_address = hashtable.HashTable()
 
         for p in self.packages:
+            self.package_by_location.put(p.location, p)
             self.package_by_address.put(p.location.get_address(), p)
             self.package_by_id.put(p.get_package_id(), p)
             self.package_by_truck.put(p.truck, p)

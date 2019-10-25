@@ -4,15 +4,22 @@ class HashTable:
     def __init__(self, initial_capacity=10):
         # initialize the hash table with empty bucket list entries.
         self.table = []
+        self.keys = []
         for i in range(initial_capacity):
             self.table.append([])
+
+    def __iter__(self):
+        all_entries = []
+        for key in self.keys:
+            all_entries.append(self.get(key))
+        return iter(all_entries)
 
     # Inserts a new item into the hash table.
     def put(self, key, item):
         # get the bucket list where this item will go.
         bucket = self.hash_key(key)
         bucket_list = self.table[bucket]
-
+        self.keys.append(key)
         # insert the item to the end of the bucket list.
         bucket_list.append(HashEntry(key, item))
 
@@ -41,6 +48,9 @@ class HashTable:
 
     def get_table(self):
         return self.table
+
+    def keys(self):
+        return self.keys
 
 
 class HashEntry:
