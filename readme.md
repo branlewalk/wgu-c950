@@ -1,4 +1,4 @@
-#wgu-c950
+# wgu-c950
 Data Structures and Algorithms II - WGU
 
 ## Scenario
